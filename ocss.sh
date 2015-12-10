@@ -8,22 +8,41 @@
 
 ############# CONFIG ############
 
+# owncloud username
 username='yourusername'
+# owncloud password
 password='yourpassword'
 
+# base url of the owncloud server
 oc_base="http://www.example.com/owncloud"
+# directory name where you want the screenshots uploaded
 oc_ocss_dir_name="ocss"
+# local path and filename of an icon you would like to use
+# for desktop notifications
 oc_icon_path="$HOME/Pictures/ocss/owncloud_logo.png"
 
+# also save screenshot locally
 save_file="true"
+# file names will be: $file_prefixYYYY-mm-dd_HH.MM.SS.png
 file_prefix="ocss_"
+# where to save pictures locally (used as temp storage for
+# upload even if $save_file is "false"
 file_dir="$HOME/Pictures/ocss"
+# command to run to edit screenshot before upload
+# leave commented out to disable functionality
 #edit_command="kolourpaint %img"
+
+# timeout on upload connection in seconds
 upload_connect_timeout="5"
+# timeout on file upload in seconds
 upload_timeout="120"
+# number of upload retries
 upload_retries="1"
+# copy URL to clip board -- true/false
 copy_url="true"
+# command to open the uploaded screenshot in a browser
 open_command="chromium %url"
+# path and filename for the logfile
 log_file="$HOME/.ocss.log"
 
 ######### END CONFIG ###########
