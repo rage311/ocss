@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env sh
 
 # ocss - OwnCloud Screenshot Sharing
 # https://github.com/rage311/ocss
@@ -28,6 +28,7 @@ file_prefix="ocss_"
 # where to save pictures locally (used as temp storage for
 # upload even if $save_file is "false"
 file_dir="$HOME/Pictures/ocss"
+
 # command to run to edit screenshot before upload
 # leave commented out to disable functionality
 #edit_command="kolourpaint %img"
@@ -48,7 +49,7 @@ log_file="$HOME/.ocss.log"
 ######### END CONFIG ###########
 
 
-function is_mac() {
+is_mac() {
   uname | grep -q "Darwin"
 }
 
@@ -67,9 +68,7 @@ if [ "$1" = "check" ]; then
   exit 0
 fi
 
-
-# notify <'ok'|'error'> <title> <text>
-function notify() {
+notify() {
   if is_mac; then
     terminal-notifier -title "$2" -message "$3"
   else
@@ -81,29 +80,28 @@ function notify() {
   fi
 }
 
-function take_screenshot() {
+take_screenshot() {
   echo "Please select area"
   is_mac || sleep 0.1 # https://bbs.archlinux.org/viewtopic.php?pid=1246173#p1246173
 
-  if ! (scrot -s "$1" &>/dev/null || screencapture -s "$1" &>/dev/null); then #takes a screenshot with selection
+  if ! (scrot -s "$1" || screencapture -s "$1"); then #takes a screenshot with selection
     echo "Couldn't make selective shot (mouse trapped?). Trying to grab active window instead"
     if ! (scrot -u "$1" &>/dev/null || screencapture -oWa "$1" &>/dev/null); then
-      echo "Error for image '$1'!" >> "$log_file"
-      echo "Error for image '$1'!"
+      echo "Error for image '$1'!" | tee -a "$log_file"
       notify error "Something went wrong :(" "Information has been logged"
       exit 1
     fi
   fi
 }
 
-function upload_image() {
+upload_image() {
   echo "Uploading '${1}'..."
   file_basename="$(basename $1)"
   curl --connect-timeout "$upload_connect_timeout" -m "$upload_timeout" --retry "$upload_retries" --insecure --user "$username:$password" -T "$1" "$oc_base/remote.php/webdav/$oc_ocss_dir_name/$file_basename"
   response="$(curl --insecure --user "$username:$password" -X POST --data 'path='$oc_ocss_dir_name'/'$file_basename'&shareType=3' "$oc_base/ocs/v1.php/apps/files_sharing/api/v1/shares")"
 
   # response contains <status>ok</status> when successful
-  if [[ "$response" == *"<status>ok</status>"* ]]; then
+  if (echo "$response" | grep -q "<status>ok</status>"); then
     # cutting the url from the xml response
     img_url="$(echo "$response" | egrep -o "<url>.*</url>" | cut -d ">" -f 2 | cut -d "<" -f 1 | sed -e "s/\&amp;/\&/")"
     echo "image link: $img_url"
@@ -152,7 +150,7 @@ if [ ! -z "$edit_command" ]; then
   $edit_command
 fi
 
-# check file exists
+# ensure file exists
 if [ ! -f "$img_file" ]; then
   echo "file '$img_file' doesn't exist!"
   exit 1
