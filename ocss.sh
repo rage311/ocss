@@ -20,6 +20,9 @@ oc_ocss_dir_name="ocss"
 # local path and filename of an icon you would like to use
 # for desktop notifications
 oc_icon_path="$HOME/Pictures/ocss/owncloud_logo.png"
+# Allows showing owncloud icon instead of terminal icon on OS X notifications. ID can be found in info.plist within the Owncloud package contents.
+oc_application_id="com.owncloud.desktopclient"
+
 
 # also save screenshot locally
 save_file="true"
@@ -70,7 +73,7 @@ fi
 
 notify() {
   if is_mac; then
-    terminal-notifier -title "$2" -message "$3"
+    terminal-notifier -title "$2" -message "$3" -sender "$oc_application_id"
   else
     if [ "$1" = "error" ]; then
       notify-send -a ocss -u critical -c "im.error" -i "$oc_icon_path" -t 500 "$2" "$3"
